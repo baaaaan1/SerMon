@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "serial-monitor"
+version = "0.1.0"
+description = "A PySide6 + pyserial desktop serial port monitor with an extensible protocol layer."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Serial Monitor" }]
+keywords = ["serial", "monitor", "pyside6", "pyserial", "qt"]
+dependencies = [
+    "PySide6>=6.6",
+    "pyserial>=3.5",
+]
+
+[project.scripts]
+serial-monitor = "main:main"
+
+[tool.setuptools]
+py-modules = ["main"]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["app*", "serial_engine*", "services*"]
+
+[tool.pyright]
+# Make Pylance/Pyright resolve the ``src``-layout packages (services,
+# serial_engine, main) for static analysis, mirroring pytest's ``pythonpath``.
+extraPaths = ["src"]
