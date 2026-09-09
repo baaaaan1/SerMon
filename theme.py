@@ -7,6 +7,13 @@ plain QSS used by the standard Qt widgets (combo boxes, menus, scrollbars...).
 """
 
 from __future__ import annotations
+import os
+import sys
+
+from PySide6.QtGui import QFontDatabase
+
+
+
 
 # --------------------------------------------------------------------------- #
 #  Colour palette (dark neumorphism / soft UI)
@@ -35,11 +42,57 @@ PALETTE = {
 
 # --------------------------------------------------------------------------- #
 #  Fonts
+#  Nunito / Nunito Sans are NOT installed on every machine, so we ship the TTFs
+#  under assets/fonts (SIL Open Font License) and register them at runtime via
+#  QFontDatabase.addApplicationFont() before any widget or style sheet exists.
 # --------------------------------------------------------------------------- #
-UI_FONT      = "Segoe UI"
+UI_FONT      = "Nunito Sans"
 UI_FONT_SIZE = 10
-TERM_FONT    = "Consolas"
+TERM_FONT    = "Cascadia Mono"
 TERM_SIZE    = 10
+
+# Fallback chain written into the style sheet so the UI degrades gracefully if
+# the bundled font cannot be loaded.
+UI_FONT_STACK = '"Nunito Sans", "Nunito", "Segoe UI", sans-serif'
+
+FONT_DIR = "assets/fonts"
+
+
+def _resource_root() -> str:
+    """Return the directory holding ``assets`` (works when frozen with PyInstaller)."""
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        return sys._MEIPASS
+    return os.path.dirname(os.path.abspath(__file__))
+
+
+def _font_file(name: str) -> bool:
+    return name.lower().endswith((".ttf", ".otf"))
+
+
+def load_bundled_fonts() -> list[str]:
+    """Register every bundled font with Qt and return its family names.
+
+    Call this *once*, right after ``QApplication`` is created and before any
+    widget or style sheet is built, so ``UI_FONT`` / ``app.setFont`` resolve to
+    the real bundled family instead of silently falling back to the system UI
+    font.
+    """
+    fonts_dir = os.path.join(_resource_root(), FONT_DIR)
+    families: list[str] = []
+    if not os.path.isdir(fonts_dir):
+        return families
+    fd = QFontDatabase()
+    for fname in sorted(os.listdir(fonts_dir)):
+        if not _font_file(fname):
+            continue
+        path = os.path.join(fonts_dir, fname)
+        font_id = fd.addApplicationFont(path)      # returns font id, -1 on error
+        if font_id < 0:
+            continue
+        for fam in fd.applicationFontFamilies(font_id):
+            if fam and fam not in families:
+                families.append(fam)
+    return families
 
 
 def lighten(c: str, amt: int = 12) -> str:
@@ -68,7 +121,7 @@ def build_qss() -> str:
         color: %(text)s;
         selection-background-color: %(accent)s;
         selection-color: %(bg)s;
-        font-family: "%(ui_font)s";
+        font-family: %(ui_font_stack)s;
         font-size: %(ui_size)spx;
     }
 
@@ -132,7 +185,7 @@ def build_qss() -> str:
     QLineEdit:focus { border-color: %(accent)s; }
 
     /* ---------- terminal ---------- */
-    QPlainTextEdit#terminal { background: transparent; color: %(terminal_rx)s; border: none; }
+    QPlainTextEdit#terminal { background: transparent; color: %(terminal_rx)s; border: none; font-family: "%(term_font)s"; font-size: %(term_size)spx; }
 
     /* ---------- scrollbars ---------- */
     QScrollBar:vertical { background: transparent; width: 10px; margin: 2px; }
@@ -164,6 +217,8 @@ def build_qss() -> str:
         "deep":        PALETTE["deep"],
         "accent":      PALETTE["accent"],
         "terminal_rx": PALETTE["terminal_rx"],
-        "ui_font":     UI_FONT,
+        "ui_font_stack": UI_FONT_STACK,
         "ui_size":     UI_FONT_SIZE,
+        "term_font":   TERM_FONT,
+        "term_size":   TERM_SIZE,
     }

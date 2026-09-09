@@ -10,13 +10,13 @@ from __future__ import annotations
 import sys
 
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtGui import QAction, QKeySequence, QFont
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QComboBox, QLineEdit, QFileDialog, QMessageBox,
 )
 
-from theme import PALETTE, build_qss
+from theme import PALETTE, build_qss, load_bundled_fonts, UI_FONT, UI_FONT_SIZE
 from serial_engine import SerialManager, available_ports, PortInfo
 from widgets import NeumorphicButton, NeumorphicFrame, TerminalView
 
@@ -28,7 +28,7 @@ BAUD_RATES = [300, 1200, 2400, 4800, 9600, 19200, 38400, 57600,
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Serial Monitor - Neumorphism")
+        self.setWindowTitle("Serial Monitor")
         self.resize(960, 660)
 
         self.mgr = SerialManager(self)
@@ -420,6 +420,8 @@ class MainWindow(QMainWindow):
 
 def main() -> int:
     app = QApplication(sys.argv)
+    load_bundled_fonts()
+    app.setFont(QFont(UI_FONT, UI_FONT_SIZE))
     app.setStyleSheet(build_qss())
     window = MainWindow()
     window.show()

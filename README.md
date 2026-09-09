@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🖥️ Serial Monitor — Neumorphism
+# 🖥️ Serial Monitor
 
 *A modern, functional Windows serial-port monitor wrapped in an elegant dark **neumorphism (soft-UI)** skin.*
 
@@ -26,6 +26,8 @@
 - 📋 **Copy terminal**, **Export to TXT**, **Clear**
 - ⌨️ **TX input** — send with a button or <kbd>Enter</kbd>
 - 📊 Live status: online/offline, RX/TX byte counters, DTR state, `port @ baud`
+- 🔤 **Bundled UI font** — ships **Nunito Sans** (with **Nunito** fallback, SIL OFL) so the UI renders identically even on machines that don't have them
+
 
 ## 📥 Requirements
 
@@ -86,7 +88,7 @@ theme.py         palette, fonts, global QSS
 
 ```powershell
 python -m pip install pyinstaller
-pyinstaller --noconfirm --onefile --windowed --name SerialMonitor main.py
+pyinstaller --noconfirm --onefile --windowed --name SerialMonitor --add-data "assets/fonts;assets/fonts" main.py
 ```
 
 The executable is written to `dist\SerialMonitor.exe`.
