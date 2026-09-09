@@ -50,6 +50,7 @@ UI_FONT      = "Nunito Sans"
 UI_FONT_SIZE = 10
 TERM_FONT    = "Cascadia Mono"
 TERM_SIZE    = 10
+UI_WEIGHT    = 500   # Medium -> Nunito Sans variable supports wght 200-1000
 
 # Fallback chain written into the style sheet so the UI degrades gracefully if
 # the bundled font cannot be loaded.
@@ -123,6 +124,7 @@ def build_qss() -> str:
         selection-color: %(bg)s;
         font-family: %(ui_font_stack)s;
         font-size: %(ui_size)spx;
+        font-weight: %(ui_weight)s;
     }
 
     /* ---------- menu bar (native QMenuBar) ---------- */
@@ -185,7 +187,7 @@ def build_qss() -> str:
     QLineEdit:focus { border-color: %(accent)s; }
 
     /* ---------- terminal ---------- */
-    QPlainTextEdit#terminal { background: transparent; color: %(terminal_rx)s; border: none; font-family: "%(term_font)s"; font-size: %(term_size)spx; }
+    QPlainTextEdit#terminal { background: transparent; color: %(terminal_rx)s; border: none; font-family: "%(term_font)s"; font-size: %(term_size)spx; font-weight: normal; }
 
     /* ---------- scrollbars ---------- */
     QScrollBar:vertical { background: transparent; width: 10px; margin: 2px; }
@@ -219,6 +221,7 @@ def build_qss() -> str:
         "terminal_rx": PALETTE["terminal_rx"],
         "ui_font_stack": UI_FONT_STACK,
         "ui_size":     UI_FONT_SIZE,
+        "ui_weight":   UI_WEIGHT,
         "term_font":   TERM_FONT,
         "term_size":   TERM_SIZE,
     }

@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
     QComboBox, QLineEdit, QFileDialog, QMessageBox,
 )
 
-from theme import PALETTE, build_qss, load_bundled_fonts, UI_FONT, UI_FONT_SIZE
+from theme import PALETTE, build_qss, load_bundled_fonts, UI_FONT, UI_FONT_SIZE, UI_WEIGHT
 from serial_engine import SerialManager, available_ports, PortInfo
 from widgets import NeumorphicButton, NeumorphicFrame, TerminalView
 
@@ -421,7 +421,7 @@ class MainWindow(QMainWindow):
 def main() -> int:
     app = QApplication(sys.argv)
     load_bundled_fonts()
-    app.setFont(QFont(UI_FONT, UI_FONT_SIZE))
+    app.setFont(QFont(UI_FONT, UI_FONT_SIZE, UI_WEIGHT))
     app.setStyleSheet(build_qss())
     window = MainWindow()
     window.show()
