@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
         # Frameless: the native caption is replaced by our themed title bar.
         self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_StyledBackground)
-        self.resize(960, 660)
+        self.resize(1000, 680)
 
         self.mgr = SerialManager(self)
         self._auto_clear = False
@@ -219,12 +219,12 @@ class MainWindow(QMainWindow):
         self.label_counters = QLabel("RX 0   TX 0")
         self.label_dtr = QLabel("DTR on")
         self.label_port = QLabel("")
-        muted = "color: %s; background: transparent; font-size: 12px;" % PALETTE["text_muted"]
+        muted = "color: %s; background: transparent; font-size: 13px;" % PALETTE["text_muted"]
         for w in (self.label_dot, self.label_status, self.label_counters,
                   self.label_dtr, self.label_port):
             w.setStyleSheet(muted)
         self.label_status.setStyleSheet(
-            "color: %s; background: transparent; font-size: 12px; font-weight: 600;"
+            "color: %s; background: transparent; font-size: 13px; font-weight: 600;"
             % PALETTE["text_muted"])
         srow.addWidget(self.label_dot)
         srow.addWidget(self.label_status)

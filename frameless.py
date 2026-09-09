@@ -8,14 +8,74 @@ maximise/restore.
 Drag uses :meth:`QWindow.startSystemMove` so Aero Snap and the maximise-by-
 dragging-to-the-top-edge behaviour keep working.  Window edges are resized in
 ``MainWindow`` (see ``eventFilter``), not here.
+
+The window-control glyphs are painted as crisp vector icons (24x24 box, ~1.8px
+pen, centred - not baseline-aligned) so they stay proportional to the rest of
+the UI instead of relying on a font glyph.
 """
 
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QRectF
+from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QWidget
 
 from theme import PALETTE
+
+
+class WindowControlButton(QPushButton):
+    """A title-bar button that paints its own vector icon (min/max/close)."""
+
+    _OBJ = {"min": "tbMin", "max": "tbMax", "restore": "tbMax", "close": "tbClose"}
+
+    def __init__(self, icon: str, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self._icon = icon
+        self._maximized = False
+        self.setObjectName(self._OBJ[icon])
+        self.setFixedSize(46, 34)
+        self.setFocusPolicy(Qt.NoFocus)
+        self.setCursor(Qt.PointingHandCursor)
+        self.setToolTip({
+            "min": "Minimize", "max": "Maximize",
+            "restore": "Restore", "close": "Close",
+        }[icon])
+
+    def set_restore(self, maximized: bool) -> None:
+        """Toggle the maximise button between the maximise / restore glyphs."""
+        self._maximized = bool(maximized)
+
+    def paintEvent(self, event) -> None:   # noqa: N802
+        super().paintEvent(event)          # QSS background + hover state
+        p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)
+        hover = self.underMouse() and self.isEnabled()
+
+        if self.objectName() == "tbClose":
+            col = QColor("#ffffff") if hover else QColor(PALETTE["text_muted"])
+        else:
+            col = QColor(PALETTE["text"]) if hover else QColor(PALETTE["text_muted"])
+
+        pen = QPen(col, 1.8)
+        pen.setCapStyle(Qt.RoundCap)
+        pen.setJoinStyle(Qt.RoundJoin)
+        p.setPen(pen)
+        p.setBrush(Qt.NoBrush)
+
+        cx = self.rect().center().x()
+        cy = self.rect().center().y()
+
+        if self._icon == "min":
+            p.drawLine(cx - 8, cy, cx + 8, cy)
+        elif self._icon == "close":
+            p.drawLine(cx - 8, cy - 8, cx + 8, cy + 8)
+            p.drawLine(cx - 8, cy + 8, cx + 8, cy - 8)
+        elif self._maximized:               # restore: two overlapping squares
+            r, off = 5, 3
+            p.drawRect(QRectF(cx - r - off, cy - r - off, 2 * r, 2 * r))
+            p.drawRect(QRectF(cx - r + off, cy - r + off, 2 * r, 2 * r))
+        else:                               # maximise: single square
+            p.drawRect(QRectF(cx - 8, cy - 8, 16, 16))
 
 
 class FramelessTitleBar(QWidget):
@@ -26,22 +86,23 @@ class FramelessTitleBar(QWidget):
         self._window = window
         self.title = title
         self.setObjectName("titleBar")
-        self.setFixedHeight(32)
+        self.setFixedHeight(34)
         self.setFocusPolicy(Qt.NoFocus)
 
         lay = QHBoxLayout(self)
-        lay.setContentsMargins(12, 0, 0, 0)
+        lay.setContentsMargins(14, 0, 0, 0)
         lay.setSpacing(0)
 
         self.lbl_title = QLabel(title)
         self.lbl_title.setStyleSheet(
-            "color: %s; background: transparent; font-weight: 600;" % PALETTE["text"])
+            "color: %s; background: transparent; font-size: 15px; font-weight: 600;"
+            % PALETTE["text"])
         lay.addWidget(self.lbl_title)
         lay.addStretch(1)
 
-        self.btn_min = self._control("–", "tbMin")
-        self.btn_max = self._control("□", "tbMax")
-        self.btn_close = self._control("×", "tbClose")
+        self.btn_min = WindowControlButton("min")
+        self.btn_max = WindowControlButton("max")
+        self.btn_close = WindowControlButton("close")
 
         self.btn_min.clicked.connect(lambda: self._window.showMinimized())
         self.btn_max.clicked.connect(self._toggle_max)
@@ -51,14 +112,6 @@ class FramelessTitleBar(QWidget):
         lay.addWidget(self.btn_max)
         lay.addWidget(self.btn_close)
 
-    @staticmethod
-    def _control(text: str, object_name: str) -> QPushButton:
-        btn = QPushButton(text)
-        btn.setObjectName(object_name)
-        btn.setFocusPolicy(Qt.NoFocus)
-        btn.setFixedSize(46, 32)
-        return btn
-
     def _toggle_max(self) -> None:
         if self._window.isMaximized():
             self._window.showNormal()
@@ -66,8 +119,8 @@ class FramelessTitleBar(QWidget):
             self._window.showMaximized()
 
     def update_state(self, maximized: bool) -> None:
-        """Sync the maximise/restore glyph (e.g. after an Aero Snap maximise)."""
-        self.btn_max.setText("❐" if maximized else "□")
+        """Sync the maximise/restore icon (e.g. after an Aero Snap maximise)."""
+        self.btn_max.set_restore(maximized)
 
     # ------------------------------------------------------------- dragging #
     def mousePressEvent(self, event) -> None:

@@ -47,9 +47,9 @@ PALETTE = {
 #  QFontDatabase.addApplicationFont() before any widget or style sheet exists.
 # --------------------------------------------------------------------------- #
 UI_FONT      = "Nunito Sans"
-UI_FONT_SIZE = 10
+UI_FONT_SIZE = 12   # base UI size - bumped so text fills the generous control height
 TERM_FONT    = "Cascadia Mono"
-TERM_SIZE    = 10
+TERM_SIZE    = 11
 UI_WEIGHT    = 500   # Medium -> Nunito Sans variable supports wght 200-1000
 
 # Fallback chain written into the style sheet so the UI degrades gracefully if
@@ -134,7 +134,7 @@ def build_qss() -> str:
         padding: 2px 4px;
         border-bottom: 1px solid %(deep)s;
     }
-    QMenuBar::item { background: transparent; padding: 4px 12px; border-radius: 6px; }
+    QMenuBar::item { background: transparent; padding: 6px 14px; border-radius: 6px; }
     QMenuBar::item:selected { background: %(surface)s; color: %(text)s; }
 
     QMenu {
@@ -150,25 +150,14 @@ def build_qss() -> str:
 
     /* ---------- frameless title bar ---------- */
     QWidget#titleBar { background: %(bg)s; border: none; }
-    QPushButton#tbMin, QPushButton#tbMax {
+    QPushButton#tbMin, QPushButton#tbMax, QPushButton#tbClose {
         background: transparent;
-        color: %(text_muted)s;
         border: none;
         border-radius: 0;
-        font-size: 14px;
-        font-weight: 600;
-        padding: 0 12px;
+        padding: 0;
     }
-    QPushButton#tbMin:hover, QPushButton#tbMax:hover { background: %(surface)s; color: %(text)s; }
-    QPushButton#tbClose {
-        background: transparent;
-        color: %(text_muted)s;
-        border: none;
-        border-radius: 0;
-        font-size: 14px;
-        padding: 0 12px;
-    }
-    QPushButton#tbClose:hover { background: #e81123; color: #ffffff; }
+    QPushButton#tbMin:hover, QPushButton#tbMax:hover { background: %(surface)s; }
+    QPushButton#tbClose:hover { background: #e81123; }
 
     /* ---------- combo boxes ---------- */
     QComboBox {
@@ -176,16 +165,16 @@ def build_qss() -> str:
         color: %(text)s;
         border: 1px solid %(deep)s;
         border-radius: 9px;
-        padding: 5px 12px;
+        padding: 6px 14px;
         min-width: 66px;
     }
-    QComboBox::drop-down { border: none; width: 22px; }
+    QComboBox::drop-down { border: none; width: 24px; }
     QComboBox::down-arrow {
         image: none; width: 0; height: 0;
-        border-left: 5px solid transparent;
-        border-right: 5px solid transparent;
-        border-top: 6px solid %(text_muted)s;
-        margin-right: 4px;
+        border-left: 7px solid transparent;
+        border-right: 7px solid transparent;
+        border-top: 8px solid %(text_muted)s;
+        margin-right: 6px;
     }
     QComboBox QAbstractItemView {
         background: %(surface_dark)s;
@@ -204,7 +193,7 @@ def build_qss() -> str:
         color: %(text)s;
         border: 1px solid %(deep)s;
         border-radius: 9px;
-        padding: 5px 12px;
+        padding: 6px 14px;
     }
     QLineEdit:focus { border-color: %(accent)s; }
 

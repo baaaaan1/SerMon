@@ -15,7 +15,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import QAbstractButton, QFrame, QPlainTextEdit
 
-from theme import PALETTE, UI_FONT, TERM_FONT, TERM_SIZE
+from theme import PALETTE, UI_FONT, UI_FONT_SIZE, TERM_FONT, TERM_SIZE
 
 
 # --------------------------------------------------------------------------- #
@@ -34,12 +34,12 @@ class NeumorphicButton(QAbstractButton):
         self.setCursor(Qt.PointingHandCursor)
         self.setFocusPolicy(Qt.NoFocus)
         self.setCheckable(toggle)
-        self.setMinimumHeight(38)
-        self.setFont(QFont(UI_FONT, 10))
+        self.setMinimumHeight(40)
+        self.setFont(QFont(UI_FONT, UI_FONT_SIZE))
 
     def sizeHint(self) -> QSize:
         w = self.fontMetrics().horizontalAdvance(self.text()) + 40
-        return QSize(max(w, 62), 42)
+        return QSize(max(w, 66), 44)
 
     def _active(self) -> bool:
         return self.isCheckable() and self.isChecked()
