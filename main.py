@@ -9,16 +9,17 @@ from __future__ import annotations
 
 import sys
 
-from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QAction, QKeySequence, QFont
+from PySide6.QtCore import Qt, QEvent, QTimer
+from PySide6.QtGui import QAction, QKeySequence, QFont, QCursor
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-    QComboBox, QLineEdit, QFileDialog, QMessageBox,
+    QComboBox, QLineEdit, QFileDialog, QMessageBox, QMenuBar, QSizePolicy,
 )
 
 from theme import PALETTE, build_qss, load_bundled_fonts, UI_FONT, UI_FONT_SIZE, UI_WEIGHT
 from serial_engine import SerialManager, available_ports, PortInfo
 from widgets import NeumorphicButton, NeumorphicFrame, TerminalView
+from frameless import FramelessTitleBar
 
 
 BAUD_RATES = [300, 1200, 2400, 4800, 9600, 19200, 38400, 57600,
@@ -29,6 +30,9 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Serial Monitor")
+        # Frameless: the native caption is replaced by our themed title bar.
+        self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_StyledBackground)
         self.resize(960, 660)
 
         self.mgr = SerialManager(self)
@@ -47,9 +51,14 @@ class MainWindow(QMainWindow):
         self._timer.timeout.connect(self._update_status)
         self._timer.start(250)
 
+        self._state_connected = False
+        QApplication.instance().installEventFilter(self)
+
     # ------------------------------------------------------------------ menu #
     def _build_menu(self) -> None:
-        bar = self.menuBar()
+        bar = QMenuBar()
+        self.menu_bar = bar
+        bar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         m_file = bar.addMenu("&File")
         act_export = QAction("Export to TXT...", self)
@@ -133,6 +142,11 @@ class MainWindow(QMainWindow):
         root = QVBoxLayout(page)
         root.setContentsMargins(12, 10, 12, 12)
         root.setSpacing(10)
+
+        # ---------------- frameless title bar + menu ---------------- #
+        self.titlebar = FramelessTitleBar(self, "Serial Monitor")
+        root.addWidget(self.titlebar)
+        root.addWidget(self.menu_bar)
 
         # ---------------- top toolbar tray ---------------- #
         self.toolbar = NeumorphicFrame(radius=16)
@@ -412,6 +426,84 @@ class MainWindow(QMainWindow):
             self, "About Serial Monitor",
             "<b>Serial Monitor</b><br>Neumorphism dark-mode serial port monitor."
             "<br>PySide6 + pyserial.")
+
+    # ---------------------------------------------------- frameless chrome #
+    RESIZE_MARGIN = 6
+
+    def showEvent(self, event) -> None:   # noqa: N802
+        super().showEvent(event)
+        if not self._state_connected:
+            handle = self.windowHandle()
+            if handle is not None:
+                handle.windowStateChanged.connect(self._sync_titlebar)
+                self._state_connected = True
+        self.titlebar.update_state(self.isMaximized())
+
+    def _sync_titlebar(self, *_args) -> None:
+        self.titlebar.update_state(self.isMaximized())
+
+    def _edge_at(self, gp) -> Qt.Edges:
+        """Return the window edges the logical global point ``gp`` falls on."""
+        local = self.mapFromGlobal(gp)
+        m = self.RESIZE_MARGIN
+        w, h = self.width(), self.height()
+        edges = Qt.Edges()
+        if local.y() <= m:
+            edges |= Qt.TopEdge
+        if local.y() >= h - m:
+            edges |= Qt.BottomEdge
+        if local.x() <= m:
+            edges |= Qt.LeftEdge
+        if local.x() >= w - m:
+            edges |= Qt.RightEdge
+        return edges
+
+    def _point_over_win_button(self, gp) -> bool:
+        for btn in (self.titlebar.btn_min, self.titlebar.btn_max,
+                    self.titlebar.btn_close):
+            if btn.isVisible():
+                tl = btn.mapToGlobal(btn.rect().topLeft())
+                if btn.rect().translated(tl).contains(gp):
+                    return True
+        return False
+
+    @staticmethod
+    def _resize_cursor(edges) -> Qt.CursorShape:
+        top = edges & Qt.TopEdge
+        bottom = edges & Qt.BottomEdge
+        left = edges & Qt.LeftEdge
+        right = edges & Qt.RightEdge
+        if (top and left) or (bottom and right):
+            return Qt.SizeFDiagCursor
+        if (top and right) or (bottom and left):
+            return Qt.SizeBDiagCursor
+        if top or bottom:
+            return Qt.SizeVerCursor
+        if left or right:
+            return Qt.SizeHorCursor
+        return Qt.ArrowCursor
+
+    def eventFilter(self, obj, event):
+        if isinstance(obj, QWidget) and obj.window() is self:
+            et = event.type()
+            handle = self.windowHandle()
+            if handle is not None and not self.isMaximized():
+                if et == QEvent.MouseMove:
+                    gp = QCursor.pos()
+                    if self._point_over_win_button(gp):
+                        self.unsetCursor()
+                    else:
+                        edges = self._edge_at(gp)
+                        self.setCursor(self._resize_cursor(edges)) if edges else self.unsetCursor()
+                elif et == QEvent.MouseButtonPress and event.button() == Qt.LeftButton:
+                    gp = QCursor.pos()
+                    if self._point_over_win_button(gp):
+                        return False  # the window control handles it
+                    edges = self._edge_at(gp)
+                    if edges:
+                        handle.startSystemResize(edges)
+                        return True
+        return super().eventFilter(obj, event)
 
     def closeEvent(self, event) -> None:   # noqa: N802
         self.mgr.stop()

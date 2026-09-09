@@ -148,6 +148,28 @@ def build_qss() -> str:
     QMenu::item:selected { background: %(accent)s; color: %(bg)s; }
     QMenu::separator { height: 1px; background: %(deep)s; margin: 5px 8px; }
 
+    /* ---------- frameless title bar ---------- */
+    QWidget#titleBar { background: %(bg)s; border: none; }
+    QPushButton#tbMin, QPushButton#tbMax {
+        background: transparent;
+        color: %(text_muted)s;
+        border: none;
+        border-radius: 0;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 0 12px;
+    }
+    QPushButton#tbMin:hover, QPushButton#tbMax:hover { background: %(surface)s; color: %(text)s; }
+    QPushButton#tbClose {
+        background: transparent;
+        color: %(text_muted)s;
+        border: none;
+        border-radius: 0;
+        font-size: 14px;
+        padding: 0 12px;
+    }
+    QPushButton#tbClose:hover { background: #e81123; color: #ffffff; }
+
     /* ---------- combo boxes ---------- */
     QComboBox {
         background: %(surface_dark)s;
