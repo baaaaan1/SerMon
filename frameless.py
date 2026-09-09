@@ -26,6 +26,12 @@ from theme import PALETTE
 class WindowControlButton(QPushButton):
     """A title-bar button that paints its own vector icon (min/max/close)."""
 
+    # ---- mudah diubah: ukuran ikon window-control -------------------------
+    # GLYPH = setengah-ukuran glyph (2*GLYPH px total). Kecilkan -> angka kecil.
+    # PEN   = ketebalan garis ikon.
+    GLYPH = 8
+    PEN   = 1.8
+
     _OBJ = {"min": "tbMin", "max": "tbMax", "restore": "tbMax", "close": "tbClose"}
 
     def __init__(self, icon: str, parent: QWidget | None = None) -> None:
@@ -56,7 +62,7 @@ class WindowControlButton(QPushButton):
         else:
             col = QColor(PALETTE["text"]) if hover else QColor(PALETTE["text_muted"])
 
-        pen = QPen(col, 1.8)
+        pen = QPen(col, self.PEN)
         pen.setCapStyle(Qt.RoundCap)
         pen.setJoinStyle(Qt.RoundJoin)
         p.setPen(pen)
@@ -66,16 +72,16 @@ class WindowControlButton(QPushButton):
         cy = self.rect().center().y()
 
         if self._icon == "min":
-            p.drawLine(cx - 8, cy, cx + 8, cy)
+            p.drawLine(cx - self.GLYPH, cy, cx + self.GLYPH, cy)
         elif self._icon == "close":
-            p.drawLine(cx - 8, cy - 8, cx + 8, cy + 8)
-            p.drawLine(cx - 8, cy + 8, cx + 8, cy - 8)
+            p.drawLine(cx - self.GLYPH, cy - self.GLYPH, cx + self.GLYPH, cy + self.GLYPH)
+            p.drawLine(cx - self.GLYPH, cy + self.GLYPH, cx + self.GLYPH, cy - self.GLYPH)
         elif self._maximized:               # restore: two overlapping squares
-            r, off = 5, 3
+            r, off = self.GLYPH - 3, 3
             p.drawRect(QRectF(cx - r - off, cy - r - off, 2 * r, 2 * r))
             p.drawRect(QRectF(cx - r + off, cy - r + off, 2 * r, 2 * r))
         else:                               # maximise: single square
-            p.drawRect(QRectF(cx - 8, cy - 8, 16, 16))
+            p.drawRect(QRectF(cx - self.GLYPH, cy - self.GLYPH, 2 * self.GLYPH, 2 * self.GLYPH))
 
 
 class FramelessTitleBar(QWidget):
