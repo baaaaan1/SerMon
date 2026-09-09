@@ -8,9 +8,10 @@ Run from the project root::
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 from PySide6.QtCore import Qt, QEvent, QTimer
-from PySide6.QtGui import QAction, QKeySequence, QFont, QCursor
+from PySide6.QtGui import QAction, QKeySequence, QFont, QCursor, QIcon
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QComboBox, QLineEdit, QFileDialog, QMessageBox, QMenuBar, QSizePolicy,
@@ -24,12 +25,14 @@ from frameless import FramelessTitleBar
 
 BAUD_RATES = [300, 1200, 2400, 4800, 9600, 19200, 38400, 57600,
               115200, 230400, 460800, 921600]
+APP_ICON_PATH = Path(__file__).resolve().parent / "assets" / "Desain tanpa judul.svg"
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Serial Monitor")
+        self.setWindowIcon(QIcon(str(APP_ICON_PATH)))
         # Frameless: the native caption is replaced by our themed title bar.
         self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_StyledBackground)
@@ -512,6 +515,7 @@ class MainWindow(QMainWindow):
 
 def main() -> int:
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon(str(APP_ICON_PATH)))
     load_bundled_fonts()
     app.setFont(QFont(UI_FONT, UI_FONT_SIZE, UI_WEIGHT))
     app.setStyleSheet(build_qss())

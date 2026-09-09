@@ -29,7 +29,7 @@ class WindowControlButton(QPushButton):
     # ---- mudah diubah: ukuran ikon window-control -------------------------
     # GLYPH = setengah-ukuran glyph (2*GLYPH px total). Kecilkan -> angka kecil.
     # PEN   = ketebalan garis ikon.
-    GLYPH = 8
+    GLYPH = 4.5
     PEN   = 1.8
 
     _OBJ = {"min": "tbMin", "max": "tbMax", "restore": "tbMax", "close": "tbClose"}
@@ -98,6 +98,13 @@ class FramelessTitleBar(QWidget):
         lay = QHBoxLayout(self)
         lay.setContentsMargins(14, 0, 0, 0)
         lay.setSpacing(0)
+
+        self.lbl_icon = QLabel(self)
+        self.lbl_icon.setFixedSize(22, 22)
+        self.lbl_icon.setPixmap(window.windowIcon().pixmap(18, 18))
+        self.lbl_icon.setToolTip(title)
+        lay.addWidget(self.lbl_icon)
+        lay.addSpacing(7)
 
         self.lbl_title = QLabel(title)
         self.lbl_title.setStyleSheet(
