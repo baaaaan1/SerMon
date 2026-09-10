@@ -25,7 +25,7 @@ from frameless import FramelessTitleBar
 
 BAUD_RATES = [300, 1200, 2400, 4800, 9600, 19200, 38400, 57600,
               115200, 230400, 460800, 921600]
-APP_ICON_PATH = Path(__file__).resolve().parent / "assets" / "Desain tanpa judul.svg"
+APP_ICON_PATH = Path(__file__).resolve().parent / "assets" / "app_icon.ico"
 
 
 class MainWindow(QMainWindow):

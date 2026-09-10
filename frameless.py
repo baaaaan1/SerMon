@@ -99,13 +99,6 @@ class FramelessTitleBar(QWidget):
         lay.setContentsMargins(14, 0, 0, 0)
         lay.setSpacing(0)
 
-        self.lbl_icon = QLabel(self)
-        self.lbl_icon.setFixedSize(22, 22)
-        self.lbl_icon.setPixmap(window.windowIcon().pixmap(18, 18))
-        self.lbl_icon.setToolTip(title)
-        lay.addWidget(self.lbl_icon)
-        lay.addSpacing(7)
-
         self.lbl_title = QLabel(title)
         self.lbl_title.setStyleSheet(
             "color: %s; background: transparent; font-size: 15px; font-weight: 600;"
