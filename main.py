@@ -21,6 +21,7 @@ from theme import PALETTE, build_qss, load_bundled_fonts, UI_FONT, UI_FONT_SIZE,
 from serial_engine import SerialManager, available_ports, PortInfo
 from widgets import NeumorphicButton, NeumorphicFrame, TerminalView
 from frameless import FramelessTitleBar
+from about import AboutDialog
 
 
 BAUD_RATES = [300, 1200, 2400, 4800, 9600, 19200, 38400, 57600,
@@ -126,10 +127,10 @@ class MainWindow(QMainWindow):
         act_clear.triggered.connect(self.clear_terminal)
         m_view.addAction(act_clear)
 
-        m_help = bar.addMenu("&Help")
-        act_about = QAction("About", self)
+        act_about = QAction("&About", self)
+        act_about.setShortcut(QKeySequence("F1"))
         act_about.triggered.connect(self._about)
-        m_help.addAction(act_about)
+        bar.addAction(act_about)
 
     # ------------------------------------------------------------------- ui #
     def _label(self, text: str) -> QLabel:
@@ -425,10 +426,7 @@ class MainWindow(QMainWindow):
 
     # -------------------------------------------------------------- misc #
     def _about(self) -> None:
-        QMessageBox.about(
-            self, "About Serial Monitor",
-            "<b>Serial Monitor</b><br>Neumorphism dark-mode serial port monitor."
-            "<br>PySide6 + pyserial.")
+        AboutDialog(self).exec()
 
     # ---------------------------------------------------- frameless chrome #
     RESIZE_MARGIN = 6

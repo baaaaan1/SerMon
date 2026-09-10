@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  WiX Toolset v3 installer definition for Serial Monitor.
+
+  Build (from the project root):
+    candle.exe -arch x64 -dVersion=1.1.0 -o build\installer\ installer\SerialMonitor.wxs
+    light.exe -ext WixUIExtension -o dist\SerialMonitor-1.1.0.msi build\installer\SerialMonitor.wixobj
+
+  The UpgradeCode below is FIXED for the lifetime of the product so that newer
+  MSI packages upgrade an existing installation instead of installing side by side.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <Product Id="*"
+           Name="Serial Monitor"
+           Language="1033"
+           Version="$(var.Version)"
+           Manufacturer="baaaaan1"
+           UpgradeCode="{971BC7E6-53FE-449C-B943-EAC1D50D12BC}">
+
+    <Package Id="*"
+             Keywords="Installer"
+             Description="Serial Monitor $(var.Version) Setup"
+             Comments="Neumorphism dark-mode serial port monitor for Windows"
+             Manufacturer="baaaaan1"
+             InstallerVersion="500"
+             Compressed="yes"
+             InstallScope="perMachine"
+             Platform="x64" />
+
+    <!-- Clean major upgrades; no downgrades, no parallel copies. -->
+    <MajorUpgrade AllowDowngrades="no"
+                  DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Add/Remove Programs branding -->
+    <Icon Id="AppIcon.ico" SourceFile="..\assets\app_icon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/baaaaan1/SerMon" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/baaaaan1/SerMon" />
+
+    <!-- Minimal installer UI (welcome + license + progress + finish) -->
+    <WixVariable Id="WixUILicenseRtf" Value="license.rtf" />
+    <UIRef Id="WixUI_Minimal" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="Serial Monitor">
+          <Component Id="MainExecutable" Guid="{DDC5E43B-23F5-4255-A6D7-F46F5A9C7108}">
+            <File Id="SerialMonitorExe"
+                  Name="SerialMonitor-v$(var.Version).exe"
+                  Source="..\dist\SerialMonitor-v$(var.Version).exe"
+                  KeyPath="yes" Vital="yes" />
+          </Component>
+
+          <Component Id="LicenseDocument" Guid="{B9C3B5A1-4C6D-4DC6-98F6-37D0224EA4C4}">
+            <File Id="LicenseTxt" Name="LICENSE.txt" Source="..\LICENSE" KeyPath="yes" />
+          </Component>
+        </Directory>
+      </Directory>
+
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ProgramMenuDir" Name="Serial Monitor">
+          <Component Id="ProgramMenuShortcut" Guid="{060691D2-0998-4A81-9A07-8CF841950D46}">
+            <Shortcut Id="StartMenuShortcut"
+                      Name="Serial Monitor"
+                      Description="Neumorphism dark-mode serial port monitor"
+                      Target="[INSTALLFOLDER]SerialMonitor-v$(var.Version).exe"
+                      WorkingDirectory="INSTALLFOLDER"
+                      Icon="AppIcon.ico" />
+            <RemoveFolder Id="RemoveProgramMenuDir" On="uninstall" />
+            <RegistryValue Root="HKCU"
+                           Key="Software\baaaaan1\Serial Monitor"
+                           Name="StartMenu"
+                           Type="integer"
+                           Value="1"
+                           KeyPath="yes" />
+          </Component>
+        </Directory>
+      </Directory>
+
+      <Directory Id="DesktopFolder">
+        <Component Id="DesktopShortcut" Guid="{83BD0BA9-E2E4-4A23-B9A9-0F21404384D6}">
+          <Shortcut Id="DesktopShortcutLnk"
+                    Name="Serial Monitor"
+                    Description="Neumorphism dark-mode serial port monitor"
+                    Target="[INSTALLFOLDER]SerialMonitor-v$(var.Version).exe"
+                    WorkingDirectory="INSTALLFOLDER"
+                    Icon="AppIcon.ico" />
+          <RegistryValue Root="HKCU"
+                         Key="Software\baaaaan1\Serial Monitor"
+                         Name="Desktop"
+                         Type="integer"
+                         Value="1"
+                         KeyPath="yes" />
+        </Component>
+      </Directory>
+
+    </Directory>
+
+    <Feature Id="MainFeature" Title="Serial Monitor" Level="1" Absent="disallow">
+      <ComponentRef Id="MainExecutable" />
+      <ComponentRef Id="LicenseDocument" />
+      <ComponentRef Id="ProgramMenuShortcut" />
+      <ComponentRef Id="DesktopShortcut" />
+    </Feature>
+
+  </Product>
+
+</Wix>

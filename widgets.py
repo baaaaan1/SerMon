@@ -15,7 +15,10 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import QAbstractButton, QFrame, QPlainTextEdit
 
-from theme import PALETTE, UI_FONT, UI_FONT_SIZE, TERM_FONT, TERM_SIZE
+from theme import (
+    PALETTE, UI_FONT, UI_FONT_SIZE, TERM_FONT, TERM_SIZE,
+    CONTROL_H, BUTTON_PAD_H, BUTTON_MIN_W,
+)
 
 
 # --------------------------------------------------------------------------- #
@@ -34,12 +37,18 @@ class NeumorphicButton(QAbstractButton):
         self.setCursor(Qt.PointingHandCursor)
         self.setFocusPolicy(Qt.NoFocus)
         self.setCheckable(toggle)
-        self.setMinimumHeight(40)
+        self.setMinimumHeight(CONTROL_H)
         self.setFont(QFont(UI_FONT, UI_FONT_SIZE))
 
     def sizeHint(self) -> QSize:
-        w = self.fontMetrics().horizontalAdvance(self.text()) + 40
-        return QSize(max(w, 66), 44)
+        fm = self.fontMetrics()
+        w = fm.horizontalAdvance(self.text()) + 2 * BUTTON_PAD_H
+        return QSize(max(w, BUTTON_MIN_W), CONTROL_H)
+
+    def minimumSizeHint(self) -> QSize:    # noqa: N802
+        # Never let a layout squeeze a button below the shared control height,
+        # otherwise it would stop matching the combos / line edits beside it.
+        return self.sizeHint()
 
     def _active(self) -> bool:
         return self.isCheckable() and self.isChecked()

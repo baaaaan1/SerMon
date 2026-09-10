@@ -52,6 +52,24 @@ TERM_FONT    = "Cascadia Mono"
 TERM_SIZE    = 11
 UI_WEIGHT    = 500   # Medium -> Nunito Sans variable supports wght 200-1000
 
+# --------------------------------------------------------------------------- #
+#  Layout tokens
+#  ONE height for every interactive control, so buttons, combo boxes and text
+#  inputs line up instead of drifting apart (buttons used to be 44px tall while
+#  the combos / line edits sitting right next to them were only 32px).
+# --------------------------------------------------------------------------- #
+CONTROL_H      = 40   # total height of NeumorphicButton / QComboBox / QLineEdit
+CONTROL_PAD_V  = 6    # vertical padding of combo + line edit (matches the QSS)
+CONTROL_PAD_H  = 14   # horizontal padding of combo + line edit (matches the QSS)
+CONTROL_RADIUS = 9    # corner radius of combo + line edit (unchanged look)
+BUTTON_PAD_H   = 20   # extra width per side for NeumorphicButton (40px in total)
+BUTTON_MIN_W   = 66   # floor width so short labels (DTR, Copy, Send) stay usable
+
+# A QSS ``min-height`` only covers the content box, so subtract the vertical
+# padding and the 1px border of the control to land on exactly CONTROL_H pixels.
+# (40 - 2 * (6 + 1) = 26px -> 26 + 12 + 2 = 40px total.)
+CONTROL_MIN_H  = CONTROL_H - 2 * (CONTROL_PAD_V + 1)
+
 # Fallback chain written into the style sheet so the UI degrades gracefully if
 # the bundled font cannot be loaded.
 UI_FONT_STACK = '"Nunito Sans", "Nunito", "Segoe UI", sans-serif'
@@ -164,9 +182,10 @@ def build_qss() -> str:
         background: %(surface_dark)s;
         color: %(text)s;
         border: 1px solid %(deep)s;
-        border-radius: 9px;
-        padding: 6px 14px;
+        border-radius: %(control_radius)spx;
+        padding: %(control_pad_v)spx %(control_pad_h)spx;
         min-width: 66px;
+        min-height: %(control_min_h)spx;
     }
     QComboBox::drop-down { border: none; width: 24px; }
     QComboBox::down-arrow {
@@ -192,8 +211,9 @@ def build_qss() -> str:
         background: %(surface_dark)s;
         color: %(text)s;
         border: 1px solid %(deep)s;
-        border-radius: 9px;
-        padding: 6px 14px;
+        border-radius: %(control_radius)spx;
+        padding: %(control_pad_v)spx %(control_pad_h)spx;
+        min-height: %(control_min_h)spx;
     }
     QLineEdit:focus { border-color: %(accent)s; }
 
@@ -235,4 +255,9 @@ def build_qss() -> str:
         "ui_weight":   UI_WEIGHT,
         "term_font":   TERM_FONT,
         "term_size":   TERM_SIZE,
+        # layout tokens (see the block above the fonts section)
+        "control_min_h": CONTROL_MIN_H,
+        "control_pad_v": CONTROL_PAD_V,
+        "control_pad_h": CONTROL_PAD_H,
+        "control_radius": CONTROL_RADIUS,
     }

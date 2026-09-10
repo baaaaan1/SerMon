@@ -9,6 +9,7 @@
 ![PySide6](https://img.shields.io/badge/PySide6-%E2%89%A56.5-46A2F1?logo=qt&logoColor=white)
 ![pyserial](https://img.shields.io/badge/pyserial-%E2%89%A53.5-166DFF?logo=python&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 </div>
 
@@ -19,7 +20,7 @@
 - 🌗 **Neumorphism dark mode** — soft double shadows and controls painted in code
 - 🪟 **Custom frameless title bar** — native dragging, Aero Snap, edge resizing, and minimize/maximize/close controls
 - 🖼️ **Dedicated application icon** — displayed as the window/taskbar app icon without cluttering the custom title bar
-- 📑 Native **menu bar** (`File` / `Connection` / `View` / `Help`) with neumorphic **top toolbar** and **bottom bar**
+- 📑 Native **menu bar** (`File` / `Connection` / `View` / `About`) with neumorphic **top toolbar** and **bottom bar**
 - 🧭 **Port + baud** selection and **Refresh ports**
 - 🔌 **Connect / Disconnect**, plus a **DTR toggle**
 - 🔁 **Auto-Reconnect** (retries every ~1 second when the link drops)
@@ -73,6 +74,7 @@ On the toolbar:
 | Export to TXT        | <kbd>Ctrl+E</kbd>       |
 | Copy terminal        | <kbd>Ctrl+Shift+C</kbd> |
 | Clear terminal       | <kbd>Ctrl+L</kbd>       |
+| About                | <kbd>F1</kbd>           |
 | Quit                 | <kbd>Ctrl+Q</kbd>       |
 
 ## 🖼️ Screenshot
@@ -87,6 +89,7 @@ frameless.py     Custom title bar, window controls, native drag, and resize supp
 serial_engine.py Threaded serial manager and automatic reconnect handling
 widgets.py       Painted neumorphism buttons, frames, and terminal widget
 theme.py         Shared palette, bundled-font loader, and global Qt style sheet
+about.py         Frameless neumorphic About panel (metadata, credits, and links)
 assets/          Application icon, screenshot, and bundled Nunito fonts
 requirements.txt Python runtime dependencies
 ```
@@ -108,4 +111,18 @@ Stable versions and downloadable build artifacts are available on the [GitHub Re
 
 ## 📄 License
 
-> A project license has not been set yet. Add a `LICENSE` file before redistributing or publishing derivative builds.
+Released under the **MIT License** — see [LICENSE](LICENSE) for the full text.
+
+Copyright (c) 2026 baaaaan1
+
+### 👀 Support My Work
+
+If my projects have been useful to you, you can support my work through <strong><a href="https://tako.id/Baaaaan1">tako.id</a></strong>, a platform for sending tips to creators. Your support helps fund hardware prototypes, components, testing, and future open-source projects.
+
+<p>
+  <a href="https://tako.id/Baaaaan1"><img alt="Scan to visit tako.id/Baaaaan1" src="assets/qr-code.svg" width="160" height="160"></a>
+</p>
+
+<sub>Scan or click the QR code to support my work at <a href="https://tako.id/Baaaaan1">tako.id/Baaaaan1</a>.</sub>
+
+</div>
