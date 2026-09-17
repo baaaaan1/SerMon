@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
 
 from theme import PALETTE, build_qss, load_bundled_fonts, UI_FONT, UI_FONT_SIZE, UI_WEIGHT
 from serial_engine import SerialManager, available_ports, PortInfo
+from line_endings import DEFAULT_LINE_ENDING, LINE_ENDING_MODES, SerialTextParser
 from widgets import NeumorphicButton, NeumorphicFrame, TerminalView
 from frameless import FramelessTitleBar
 from about import AboutDialog
@@ -40,6 +41,8 @@ class MainWindow(QMainWindow):
         self.resize(1000, 680)
 
         self.mgr = SerialManager(self)
+        self._rx_parser = SerialTextParser(DEFAULT_LINE_ENDING)
+        self._rx_record_open = False
         self._auto_clear = False
         self._guard = False   # re-entrancy guard for toggle synchronisation
 
@@ -206,6 +209,14 @@ class MainWindow(QMainWindow):
         self.tx_input = QLineEdit()
         self.tx_input.setPlaceholderText("Type data to send...")
         row.addWidget(self.tx_input, 1)
+        row.addWidget(self._label("Line ending"))
+        self.combo_line_ending = QComboBox()
+        for mode in LINE_ENDING_MODES:
+            self.combo_line_ending.addItem(mode.label, mode.key)
+        self.combo_line_ending.setCurrentIndex(
+            self.combo_line_ending.findData(DEFAULT_LINE_ENDING))
+        self.combo_line_ending.setMinimumWidth(150)
+        row.addWidget(self.combo_line_ending)
         self.btn_send = NeumorphicButton("Send", accent=True)
         row.addWidget(self.btn_send)
         self.btn_clear = NeumorphicButton("Clear")
@@ -259,6 +270,8 @@ class MainWindow(QMainWindow):
         self.btn_reconnect.toggled.connect(self._toggle_auto_reconnect)
         self.btn_auto_clear.toggled.connect(self._toggle_auto_clear)
         self.btn_timestamp.toggled.connect(self._toggle_timestamps)
+        self.combo_line_ending.currentIndexChanged.connect(
+            self._change_line_ending)
 
         self.btn_send.clicked.connect(self.send)
         self.tx_input.returnPressed.connect(self.send)
@@ -305,6 +318,13 @@ class MainWindow(QMainWindow):
         self.terminal.set_timestamps(bool(checked))
         self._sync_toggle(self.act_timestamp, self.btn_timestamp, checked)
 
+    def _change_line_ending(self, _index: int) -> None:
+        key = self.combo_line_ending.currentData()
+        if not key or key == self._rx_parser.mode.key:
+            return
+        self._flush_rx_parser()
+        self._rx_parser.set_mode(str(key))
+
     # ------------------------------------------------------------ actions #
     def toggle_connect(self) -> None:
         if self.mgr.is_open:
@@ -322,16 +342,34 @@ class MainWindow(QMainWindow):
         text = self.tx_input.text()
         if not text:
             return
-        data = text.encode("utf-8")
+        data = text.encode("utf-8") + self._rx_parser.mode.tx_suffix
         if self.mgr.write(data) < 0:
             self._on_status("TX failed - not connected")
             return
+        self.terminal.finish_line("rx")
         self.terminal.append_text(text + "\n", "tx")
         self.tx_input.clear()
 
     def clear_terminal(self) -> None:
-        self.terminal.clear_terminal()
+        self._clear_terminal_state()
         self._on_status("Terminal cleared")
+
+    def _clear_terminal_state(self) -> None:
+        self.terminal.clear_terminal()
+        self._rx_parser.reset()
+        self._rx_record_open = False
+
+    def _flush_rx_parser(self) -> None:
+        partial = self._rx_parser.flush()
+        if partial:
+            self.terminal.append_text(
+                partial,
+                "rx",
+                timestamp_lines=False,
+                timestamp_start=not self._rx_record_open,
+            )
+        self.terminal.finish_line("rx")
+        self._rx_record_open = False
 
     def copy_terminal(self) -> None:
         QApplication.clipboard().setText(self.terminal.toPlainText())
@@ -392,14 +430,26 @@ class MainWindow(QMainWindow):
 
     # ------------------------------------------------------------ signals #
     def _on_data(self, data: bytes) -> None:
-        self.terminal.append_text(data.decode("utf-8", "replace"), "rx")
+        parse_lines = self._rx_parser.mode.rx_delimiter is not None
+        for fragment in self._rx_parser.feed(data):
+            self.terminal.append_text(
+                fragment.text,
+                "rx",
+                timestamp_lines=not parse_lines,
+                timestamp_start=not self._rx_record_open,
+            )
+            if parse_lines:
+                self._rx_record_open = not fragment.complete
 
     def _on_connected(self, port: str) -> None:
+        self._rx_parser.reset()
+        self._rx_record_open = False
         self._on_status("Connected %s @ %s" % (port, self.combo_baud.currentText()))
         if self._auto_clear:
-            self.terminal.clear_terminal()
+            self._clear_terminal_state()
 
     def _on_disconnected(self, reason: str) -> None:
+        self._flush_rx_parser()
         self._on_status("Disconnected (%s)" % reason)
 
     def _on_status(self, msg: str) -> None:

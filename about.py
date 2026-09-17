@@ -28,7 +28,7 @@ from widgets import NeumorphicButton
 #  Application metadata (single source of truth for the About panel)
 # --------------------------------------------------------------------------- #
 APP_NAME = "Serial Monitor"
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.2.0"
 APP_TAGLINE = (
     "A modern, functional Windows serial-port monitor wrapped in an elegant "
     "dark neumorphism (soft-UI) skin."
@@ -54,11 +54,12 @@ FEATURES = [
     "Auto-Reconnect and Auto-Clear on reconnect",
     "Colour-coded RX / TX / system terminal output",
     "Optional millisecond timestamps on every line (Ctrl+T)",
+    "Shared TX/RX line-ending modes with chunk-safe parsing",
     "Copy terminal, Export to TXT, and Clear actions",
     "Live status: online/offline, RX/TX counters, port @ baud",
 ]
 
-TECH_STACK = "Python 3.9+   -   PySide6 (Qt 6)   -   pyserial"
+TECH_STACK = "Python 3.10+   -   PySide6 (Qt 6)   -   pyserial"
 CREDITS = (
     "UI font: Nunito Sans (SIL Open Font License).   "
     "License: MIT."

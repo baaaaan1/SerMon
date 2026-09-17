@@ -3,8 +3,8 @@
   WiX Toolset v3 installer definition for Serial Monitor.
 
   Build (from the project root):
-    candle.exe -arch x64 -dVersion=1.1.0 -o build\installer\ installer\SerialMonitor.wxs
-    light.exe -ext WixUIExtension -o dist\SerialMonitor-1.1.0.msi build\installer\SerialMonitor.wixobj
+    candle.exe -arch x64 -dVersion=1.2.0 -o build\installer\ installer\SerialMonitor.wxs
+    light.exe -ext WixUIExtension -o dist\SerialMonitor-v1.2.0.msi build\installer\SerialMonitor.wixobj
 
   The UpgradeCode below is FIXED for the lifetime of the product so that newer
   MSI packages upgrade an existing installation instead of installing side by side.
@@ -34,13 +34,13 @@
     <MediaTemplate EmbedCab="yes" />
 
     <!-- Add/Remove Programs branding -->
-    <Icon Id="AppIcon.ico" SourceFile="..\assets\app_icon.ico" />
+    <Icon Id="AppIcon.ico" SourceFile="assets\app_icon.ico" />
     <Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
     <Property Id="ARPHELPLINK" Value="https://github.com/baaaaan1/SerMon" />
     <Property Id="ARPURLINFOABOUT" Value="https://github.com/baaaaan1/SerMon" />
 
     <!-- Minimal installer UI (welcome + license + progress + finish) -->
-    <WixVariable Id="WixUILicenseRtf" Value="license.rtf" />
+    <WixVariable Id="WixUILicenseRtf" Value="installer\license.rtf" />
     <UIRef Id="WixUI_Minimal" />
 
     <Directory Id="TARGETDIR" Name="SourceDir">
@@ -50,12 +50,12 @@
           <Component Id="MainExecutable" Guid="{DDC5E43B-23F5-4255-A6D7-F46F5A9C7108}">
             <File Id="SerialMonitorExe"
                   Name="SerialMonitor-v$(var.Version).exe"
-                  Source="..\dist\SerialMonitor-v$(var.Version).exe"
+                  Source="dist\SerialMonitor-v$(var.Version).exe"
                   KeyPath="yes" Vital="yes" />
           </Component>
 
           <Component Id="LicenseDocument" Guid="{B9C3B5A1-4C6D-4DC6-98F6-37D0224EA4C4}">
-            <File Id="LicenseTxt" Name="LICENSE.txt" Source="..\LICENSE" KeyPath="yes" />
+            <File Id="LicenseTxt" Name="LICENSE.txt" Source="LICENSE" KeyPath="yes" />
           </Component>
         </Directory>
       </Directory>

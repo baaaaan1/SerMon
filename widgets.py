@@ -143,6 +143,7 @@ class TerminalView(QPlainTextEdit):
         self.setMaximumBlockCount(20000)
         self._follow = True
         self._timestamps = False
+        self._at_line_start = True
         self._colors = {
             "rx":  QColor(PALETTE["terminal_rx"]),
             "tx":  QColor(PALETTE["terminal_tx"]),
@@ -157,24 +158,42 @@ class TerminalView(QPlainTextEdit):
 
     def clear_terminal(self) -> None:
         self.clear()
+        self._at_line_start = True
 
     def set_timestamps(self, enabled: bool) -> None:
         self._timestamps = bool(enabled)
 
-    def append_text(self, text: str, kind: str = "rx") -> None:
+    def finish_line(self, kind: str = "rx") -> None:
+        """Add a line break only when displayed text has an open line."""
+        if not self._at_line_start:
+            self.append_text("\n", kind)
+
+    def append_text(
+        self,
+        text: str,
+        kind: str = "rx",
+        timestamp_lines: bool = True,
+        timestamp_start: bool = True,
+    ) -> None:
         """Append coloured text.  ``kind`` is rx / tx / sys."""
+        if not text:
+            return
         cursor = self.textCursor()
         cursor.movePosition(QTextCursor.End)
-        if self._timestamps and kind in ("rx", "tx"):
-            ts_fmt = QTextCharFormat()
-            ts_fmt.setForeground(self._colors["sys"])
-            ts = QDateTime.currentDateTime().toString("HH:mm:ss.zzz")
-            cursor.insertText("[%s] " % ts, ts_fmt)
         fmt = QTextCharFormat()
         fmt.setForeground(self._colors.get(kind, self._colors["rx"]))
         if kind == "tx":
             fmt.setFontWeight(700)
-        cursor.insertText(text, fmt)
+        for index, part in enumerate(text.splitlines(keepends=True)):
+            add_timestamp = timestamp_lines or index == 0
+            if (self._timestamps and timestamp_start and add_timestamp
+                    and self._at_line_start and kind in ("rx", "tx")):
+                ts_fmt = QTextCharFormat()
+                ts_fmt.setForeground(self._colors["sys"])
+                ts = QDateTime.currentDateTime().toString("HH:mm:ss.zzz")
+                cursor.insertText("[%s] " % ts, ts_fmt)
+            cursor.insertText(part, fmt)
+            self._at_line_start = part.endswith(("\r", "\n"))
         if self._follow:
             self._scroll_bottom()
 
