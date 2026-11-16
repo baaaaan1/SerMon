@@ -26,9 +26,9 @@ class ParsedFragment:
 
 LINE_ENDING_MODES = (
     LineEndingMode("none", "No line ending", b"", None),
-    LineEndingMode("lf", "Newline", b"\n", "\n"),
-    LineEndingMode("cr", "Carriage return", b"\r", "\r"),
-    LineEndingMode("crlf", "Both NL & CR", b"\r\n", "\r\n"),
+    LineEndingMode("lf", "LF (\\n)", b"\n", "\n"),
+    LineEndingMode("cr", "CR (\\r)", b"\r", "\r"),
+    LineEndingMode("crlf", "CRLF (\\r\\n)", b"\r\n", "\r\n"),
 )
 LINE_ENDING_BY_KEY = {mode.key: mode for mode in LINE_ENDING_MODES}
 DEFAULT_LINE_ENDING = "crlf"
@@ -48,6 +48,7 @@ class SerialTextParser:
         self._max_pending_chars = max_pending_chars
         self._mode = self._get_mode(mode)
         self._pending = ""
+        self._display_cr = False
         self._decoder = self._new_decoder()
 
     @property
@@ -64,34 +65,50 @@ class SerialTextParser:
         text = self._decoder.decode(data, final=False)
         delimiter = self._mode.rx_delimiter
         if delimiter is None:
+            text = self._display_text(text)
             return [ParsedFragment(text, False)] if text else []
 
         self._pending += text
         parts = self._pending.split(delimiter)
         self._pending = parts.pop()
-        fragments = [ParsedFragment(part + "\n", True) for part in parts]
+        fragments = [
+            ParsedFragment(self._display_text(part + delimiter), True)
+            for part in parts
+        ]
 
         if len(self._pending) > self._max_pending_chars:
             keep = self._delimiter_prefix_length(self._pending, delimiter)
             if keep:
-                fragments.append(ParsedFragment(self._pending[:-keep], False))
+                fragments.append(ParsedFragment(
+                    self._display_text(self._pending[:-keep]), False))
                 self._pending = self._pending[-keep:]
             else:
-                fragments.append(ParsedFragment(self._pending, False))
+                fragments.append(ParsedFragment(
+                    self._display_text(self._pending), False))
                 self._pending = ""
         return fragments
 
     def flush(self) -> str:
         """Return pending decoded text and reset state while retaining mode."""
         tail = self._decoder.decode(b"", final=True)
-        text = self._pending + tail
+        text = self._display_text(self._pending + tail)
         self.reset()
         return text
 
     def reset(self) -> None:
         """Discard all pending input while retaining the selected mode."""
         self._pending = ""
+        self._display_cr = False
         self._decoder = self._new_decoder()
+
+    def _display_text(self, text: str) -> str:
+        """Normalize display newlines, including CRLF split across chunks."""
+        if not text:
+            return ""
+        if self._display_cr and text.startswith("\n"):
+            text = text[1:]
+        self._display_cr = text.endswith("\r")
+        return text.replace("\r\n", "\n").replace("\r", "\n")
 
     @staticmethod
     def _new_decoder():

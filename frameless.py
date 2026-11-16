@@ -50,6 +50,8 @@ class WindowControlButton(QPushButton):
     def set_restore(self, maximized: bool) -> None:
         """Toggle the maximise button between the maximise / restore glyphs."""
         self._maximized = bool(maximized)
+        self.setToolTip("Restore" if maximized else "Maximize")
+        self.update()
 
     def paintEvent(self, event) -> None:   # noqa: N802
         super().paintEvent(event)          # QSS background + hover state
@@ -92,6 +94,9 @@ class FramelessTitleBar(QWidget):
         self._window = window
         self.title = title
         self.setObjectName("titleBar")
+        self.setAttribute(Qt.WA_StyledBackground)
+        self.setStyleSheet(
+            "QWidget#titleBar { background-color: %s; }" % PALETTE["bg"])
         self.setFixedHeight(34)
         self.setFocusPolicy(Qt.NoFocus)
 
