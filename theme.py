@@ -189,10 +189,8 @@ def build_qss() -> str:
     }
     QComboBox::drop-down { border: none; width: 24px; }
     QComboBox::down-arrow {
-        image: none; width: 0; height: 0;
-        border-left: 7px solid transparent;
-        border-right: 7px solid transparent;
-        border-top: 8px solid %(text_muted)s;
+        image: url("%(combo_arrow)s");
+        width: 14px; height: 14px;
         margin-right: 6px;
     }
     QComboBox QAbstractItemView {
@@ -216,6 +214,20 @@ def build_qss() -> str:
         min-height: %(control_min_h)spx;
     }
     QLineEdit:focus { border-color: %(accent)s; }
+    QLineEdit#terminalInput {
+        font-family: "%(term_font)s";
+        font-size: %(term_size)spx;
+        font-weight: normal;
+    }
+
+    QListView {
+        background: %(surface_dark)s;
+        border: 1px solid %(deep)s;
+        selection-background-color: %(accent)s;
+        selection-color: %(bg)s;
+        padding: 4px;
+    }
+    QListView::item { padding: 5px 8px; }
 
     /* ---------- terminal ---------- */
     QPlainTextEdit#terminal { background: transparent; color: %(terminal_rx)s; border: none; font-family: "%(term_font)s"; font-size: %(term_size)spx; font-weight: normal; }
@@ -260,4 +272,5 @@ def build_qss() -> str:
         "control_pad_v": CONTROL_PAD_V,
         "control_pad_h": CONTROL_PAD_H,
         "control_radius": CONTROL_RADIUS,
+        "combo_arrow": os.path.join(_resource_root(), "assets", "chevron-down.svg").replace("\\", "/"),
     }

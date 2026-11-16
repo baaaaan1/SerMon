@@ -28,7 +28,7 @@ from widgets import NeumorphicButton
 #  Application metadata (single source of truth for the About panel)
 # --------------------------------------------------------------------------- #
 APP_NAME = "Serial Monitor"
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.3.0"
 APP_TAGLINE = (
     "A modern, functional Windows serial-port monitor wrapped in an elegant "
     "dark neumorphism (soft-UI) skin."
@@ -55,6 +55,7 @@ FEATURES = [
     "Colour-coded RX / TX / system terminal output",
     "Optional millisecond timestamps on every line (Ctrl+T)",
     "Shared TX/RX line-ending modes with chunk-safe parsing",
+    "Saved configuration and command history with completion",
     "Copy terminal, Export to TXT, and Clear actions",
     "Live status: online/offline, RX/TX counters, port @ baud",
 ]
@@ -62,6 +63,7 @@ FEATURES = [
 TECH_STACK = "Python 3.10+   -   PySide6 (Qt 6)   -   pyserial"
 CREDITS = (
     "UI font: Nunito Sans (SIL Open Font License).   "
+    "Icons: Lucide via Iconify (ISC / MIT).   "
     "License: MIT."
 )
 
@@ -230,6 +232,7 @@ class AboutDialog(QDialog):
         row = QHBoxLayout()
         row.addStretch(1)
         btn_close = NeumorphicButton("Close", accent=True)
+        btn_close.setToolTip("Close the About panel (Esc)")
         # Follow the exact same metrics as every other button in the app (width
         # comes from sizeHint) and pin the height so a short dialog can never
         # squash the footer out of proportion.

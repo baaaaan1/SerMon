@@ -39,6 +39,38 @@ class SerialTextParserTests(unittest.TestCase):
             parser.feed(b" world"), [ParsedFragment(" world", False)])
         self.assertEqual(parser.flush(), "")
 
+    def test_stream_normalizes_crlf_across_chunks_without_blank_lines(self):
+        parser = SerialTextParser("none")
+
+        fragments = []
+        for chunk in (b"one\r", b"", b"\ntwo\r\nthree\r", b"four\n"):
+            fragments.extend(parser.feed(chunk))
+
+        self.assertEqual(
+            "".join(fragment.text for fragment in fragments),
+            "one\ntwo\nthree\nfour\n",
+        )
+
+    def test_lf_mode_displays_crlf_as_one_newline(self):
+        parser = SerialTextParser("lf")
+
+        self.assertEqual(parser.feed(b"one\r"), [])
+        self.assertEqual(parser.feed(b"\n"), [ParsedFragment("one\n", True)])
+
+    def test_cr_mode_does_not_duplicate_crlf_display_newlines(self):
+        parser = SerialTextParser("cr")
+
+        self.assertEqual(parser.feed(b"one\r"), [ParsedFragment("one\n", True)])
+        self.assertEqual(parser.feed(b"\ntwo\r"), [ParsedFragment("two\n", True)])
+
+    def test_stream_reset_does_not_suppress_new_session_newline(self):
+        parser = SerialTextParser("none")
+        parser.feed(b"old\r")
+
+        parser.reset()
+
+        self.assertEqual(parser.feed(b"\n"), [ParsedFragment("\n", False)])
+
     def test_lf_parses_multiple_empty_and_partial_records(self):
         parser = SerialTextParser("lf")
 
