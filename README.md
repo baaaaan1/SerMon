@@ -151,7 +151,7 @@ Display text normalizes CR, LF, and CRLF to a single visual newline, including C
 
 ## 🖼️ Screenshot
 
-![Serial Monitor main window](assets/screenshot.png)
+![Serial Monitor main window](assets/pic.jpg)
 
 ## 📁 Project layout
 
